@@ -1,0 +1,173 @@
+<html>
+    <head>
+        <script type="text/javascript" src="2d.js"></script>
+        <script type="text/javascript" src="buhin.js"></script>
+        <script type="text/javascript" src="curve.js"></script>
+        <script type="text/javascript" src="kage.js"></script>
+        <script type="text/javascript" src="kagecd.js"></script>
+        <script type="text/javascript" src="kagedf.js"></script>
+        <script type="text/javascript" src="polygon.js"></script>
+        <script type="text/javascript" src="polygons.js"></script>
+        <script type="application/x-javascript">
+        var kage;
+
+        function init() {
+            kage = new Kage();
+            kage.kUseCurve = false;
+
+            // S
+            kage.kBuhin.push("u5e7f-05", "1:0:32:105:13:105:37$1:2:0:34:37:188:37$7:12:7:34:37:34:96:34:163:12:187");
+            kage.kBuhin.push("u6797", "1:0:0:16:60:97:60$1:0:0:57:16:57:186$2:32:7:57:64:42:123:13:159$2:7:8:57:82:77:93:93:115$1:0:0:102:59:186:59$1:0:0:138:15:138:186$2:32:7:136:59:119:123:83:160$2:7:0:142:59:152:116:184:153");
+            kage.kBuhin.push("S", "99:0:0:0:0:200:200:u5e7f-05$99:0:0:32:32:195:197:u6797");
+            // K
+            kage.kBuhin.push("u7530", "1:12:13:33:37:33:167$1:2:2:33:37:167:37$1:22:23:167:37:167:167$1:32:32:100:37:100:167$1:2:2:33:101:167:101$1:2:2:33:167:167:167");
+            kage.kBuhin.push("K", "2:0:7:96:13:90:28:81:42$99:0:0:19:24:181:124:u7530$2:0:7:78:113:75:173:12:187$3:0:5:108:113:108:177:180:177$2:0:7:140:119:135:136:127:155$2:0:7:119:156:135:154:166:147$2:7:8:150:129:164:140:170:157");
+            // I
+            kage.kBuhin.push("I", "1:12:13:42:46:42:154$1:2:2:42:46:158:46$1:22:23:158:46:158:154$1:2:2:42:154:158:154");
+
+            // S()
+            kage.kBuhin.push("u6797-03", "1:0:0:20:39:103:39$1:0:0:65:13:65:97$2:32:7:61:39:47:75:13:95$2:7:8:65:51:86:58:95:74$1:0:0:104:39:181:39$1:0:0:136:13:136:97$2:32:7:132:39:118:74:82:92$2:7:0:140:40:153:66:178:85");
+            kage.kBuhin.push("SS", "1:0:32:110:13:110:35$1:2:0:34:35:188:35$7:12:7:34:35:34:96:34:163:12:187$99:0:0:30:34:197:124:u6797-03");
+            // K()
+            kage.kBuhin.push("KK", "2:0:7:48:14:42:29:35:46$1:12:13:23:46:23:101$1:2:2:23:46:69:46$1:22:23:69:46:69:101$1:2:2:23:74:69:74$1:2:2:23:101:69:101$1:32:32:46:46:46:101$2:0:7:36:113:35:165:14:184$3:0:5:51:103:51:178:184:178$2:0:7:72:111:68:130:61:148$2:0:7:54:150:68:146:81:141$2:7:8:73:124:82:135:85:152");
+            // I()
+            kage.kBuhin.push("II", "1:12:13:30:28:30:173$1:2:2:30:28:171:28$1:22:23:171:28:171:173$1:2:2:30:173:171:173");
+
+            var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+            for(var i = 0; i < hashes.length; i++)
+            {
+                var hash = hashes[i].split('=');
+                if(hash[0] == 'source') {
+                    var source = document.getElementById('source');
+                    source.value = decodeURI(hash[1]);
+                    break;
+                }
+            }
+            draw();
+        }
+
+        function random(n) {
+            var chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split('');
+            var s = '';
+            for (var i = 0; i < n; i++) {
+                s += chars[Math.floor(Math.random() * chars.length)];
+            }
+            return s;
+        };
+
+        function parse(list) {
+            for(var i = 0; i < list.length; i++) {
+                if(list[i] == '(') {
+                    var depth = 0;
+                    for(var j = i; j < list.length; j++) {
+                        if(list[j] == '(')
+                            depth += 1;
+                        if(list[j] == ')')
+                            depth -= 1;
+                        if(depth == 0)
+                            break;
+                    }
+                    list = [].concat(list.slice(0, i), parse(list.slice(i + 1, j)), list.slice(j + 1, list.length));
+                }
+            }
+
+            if(list.length == 0) {
+                return;
+            } else if(list.length == 1) {
+                return list[0];
+            } else {
+                var arg = random(10);
+                var args = new Array();
+                console.log(list);
+                for(var i = 1; i < list.length; i++) {
+                    var x = Math.floor((i - 1) / 2.0);
+                    var max = Math.ceil((list.length - 1) / 2.0);
+                    var prefix = Math.max(15 - max * 5, -5);
+
+                    if(i == list.length - 1 && (list.length - 1) % 2) {
+                        args.push('99:0:0:0:' + (x * 200 / max - prefix) + ':200:' + ((x + 1) * 200 / max + prefix) + ':' + list[i]);
+                    } else {
+                        if((i - 1) % 2) {
+                            args.push('99:0:0:100:' + (x * 200 / max - prefix) + ':200:' + ((x + 1) * 200 / max + prefix) + ':' + list[i]);
+                        } else {
+                            args.push('99:0:0:10:' + (x * 200 / max - prefix) + ':110:' + ((x + 1) * 200 / max + prefix) + ':' + list[i]);
+                        }
+                    }
+                }
+                kage.kBuhin.push(arg, args.join('$'));
+
+                var func = random(10);
+                if(list[0] == 'S') {
+                    kage.kBuhin.push(func, '99:0:0:0:0:200:200:SS$99:0:0:25:80:195:190:' + arg);
+                } else if(list[0] == 'K') {
+                    kage.kBuhin.push(func, '99:0:0:0:0:200:200:KK$99:0:0:80:15:190:170:' + arg);
+                } else if(list[0] == 'I') {
+                    kage.kBuhin.push(func, '99:0:0:0:0:200:200:II$99:0:0:25:30:165:170:' + arg);
+                }
+
+                return func;
+            }
+        }
+
+        function draw() {
+            var canvas = document.getElementById("canvas");
+            var ctx = canvas.getContext("2d");
+            ctx.fillStyle = "rgb(255, 255, 255)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            var text = document.getElementById("source");
+            var source = new Array();
+            var sample = ['S', 'K', 'I', '(', ')'];
+
+            for(var i = 0; i < text.value.length; i++) {
+                for(var j = 0; j < sample.length; j++) {
+                    if(text.value[i] == sample[j]) {
+                        source.push(text.value[i]);
+                        break;
+                    }
+                }
+            }
+
+            var polygons = new Polygons();
+            kage.kBuhin.push('result', '99:0:0:0:0:' + canvas.width + ':' + canvas.height + ':' + parse(source));
+            kage.makeGlyph(polygons, "result");
+
+            ctx.fillStyle = "rgb(0, 0, 0)";
+            for(var i = 0; i < polygons.array.length; i++) {
+                ctx.beginPath();
+                ctx.moveTo(polygons.array[i].array[0].x, polygons.array[i].array[0].y);
+                for(var j = 1; j < polygons.array[i].array.length; j++) {
+                    ctx.lineTo(polygons.array[i].array[j].x, polygons.array[i].array[j].y);
+                }
+                ctx.closePath();
+                ctx.fill();
+            }
+        }
+
+        function resize() {
+            var width = document.getElementById('width').value;
+            var height = document.getElementById('height').value;
+            
+            var canvas = document.getElementById("canvas");
+            canvas.width = width;
+            canvas.height = height;
+
+            draw();
+        }
+        </script>
+    </head>
+    <body onload="init()">
+        <div>
+            <input id="source" type="text" style="width: 200px;" />
+            <input type="submit" value="Draw" onclick="draw();" />
+        </div>
+        <div>
+            width: <input id="width" type="number" style="width: 50px;" />px
+            height: <input id="height" type="number" style="width: 50px;" />px
+            <input type="submit" value="Change size" onclick="resize();" />
+        </div>
+        <div>
+            <canvas id="canvas" style="border: 1px #ccc solid;" width="200" height="200" />
+        </div>
+    </body>
+</html>
